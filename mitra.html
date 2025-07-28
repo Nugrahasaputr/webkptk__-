@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mitra Kami - Kantor KPTK</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">PASSIKOLA</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="mitra.html">Mitra Kami</a></li>
+                    <li class="nav-item"><a class="nav-link" href="prosedur.html">Dokumen Kerja Sama</a></li>
+                    <li class="nav-item"><a class="nav-link" href="statistik.html">Statistik</a></li>
+                    <li class="nav-item"><a class="nav-link" href="kontak.html">Kontak</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="bg-light py-5">
+        <div class="container text-center">
+            <h1 class="display-6 fw-bold">Daftar Mitra Resmi Kantor KPTK</h1>
+            <p class="lead text-muted">Lembaga dan perusahaan yang telah bersinergi bersama kami berdasarkan bidangnya.</p>
+        </div>
+    </header>
+
+    <div class="container my-4">
+        <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="🔍 Cari mitra berdasarkan nama, fokus, atau alamat...">
+    </div>
+
+    <main class="container my-5">
+        <section class="mb-4">
+            <h2 class="border-bottom pb-2 mb-3">
+                <button class="btn btn-link text-start text-decoration-none text-dark fs-4 fw-bold p-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-tik" aria-expanded="false" aria-controls="collapse-tik">
+                    Bidang Teknologi Informasi & Komunikasi (TIK)
+                </button>
+            </h2>
+            <div class="collapse" id="collapse-tik">
+                <div class="row g-4" id="mitra-tik">
+                    </div>
+            </div>
+        </section>
+
+        <section class="mb-4">
+            <h2 class="border-bottom pb-2 mb-3">
+                <button class="btn btn-link text-start text-decoration-none text-dark fs-4 fw-bold p-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-perikanan" aria-expanded="false" aria-controls="collapse-perikanan">
+                    Bidang Perikanan
+                </button>
+            </h2>
+            <div class="collapse" id="collapse-perikanan">
+                <div class="row g-4" id="mitra-perikanan">
+                    </div>
+            </div>
+        </section>
+
+        <section class="mb-4">
+            <h2 class="border-bottom pb-2 mb-3">
+                <button class="btn btn-link text-start text-decoration-none text-dark fs-4 fw-bold p-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-kelautan" aria-expanded="false" aria-controls="collapse-kelautan">
+                    Bidang Kelautan
+                </button>
+            </h2>
+            <div class="collapse" id="collapse-kelautan">
+                <div class="row g-4" id="mitra-kelautan">
+                    </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-dark text-white text-center p-4 mt-5">
+        <p class="mb-0">© 2025 Kantor KPTK. Semua Hak Cipta Dilindungi.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+
+        const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTSLDuZ9a5mNLIIjKO97xKDF3eKQbPrnDVmIPi4oNfSB5vkwBbogjF4W8W9UgyB4cM4IUwxOTDuF3i4/pub?output=csv';
+        const tikContainer = document.getElementById('mitra-tik');
+        const perikananContainer = document.getElementById('mitra-perikanan');
+        const kelautanContainer = document.getElementById('mitra-kelautan');
+        
+        function parseCSV(csvText) {
+            const lines = csvText.split(/\r?\n/);
+            const headers = lines[0].split(',');
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i]) continue;
+                const obj = {};
+                const currentline = lines[i].split(',');
+                for (let j = 0; j < headers.length; j++) {
+                    obj[headers[j]] = currentline[j];
+                }
+                data.push(obj);
+            }
+            return data;
+        }
+
+        try {
+            const response = await fetch(googleSheetURL);
+            const csvText = await response.text();
+            const data = parseCSV(csvText);
+            
+            data.forEach(mitra => {
+                const cardHTML = `
+                    <div class="col-md-6 partner-card">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary">${mitra.nama || ''}</h5>
+                                <p class="card-text"><strong>Alamat:</strong> ${mitra.alamat || ''}</p>
+                                <p class="card-text"><strong>Ruang lingkup kerja sama:</strong> ${mitra.fokus || ''}</p>
+                                <p class="card-text "><strong>Bergabung Sejak:</strong> ${mitra.tahun || ''}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                if (mitra.bidang === 'TIK') {
+                    tikContainer.innerHTML += cardHTML;
+                } else if (mitra.bidang === 'Perikanan') {
+                    perikananContainer.innerHTML += cardHTML;
+                } else if (mitra.bidang === 'Kelautan') {
+                    kelautanContainer.innerHTML += cardHTML;
+                }
+            });
+
+            activateSearch();
+
+        } catch (error) {
+            console.error('Gagal mengambil data dari Google Sheet:', error);
+            // Menampilkan pesan error di semua kontainer jika gagal
+            const errorMsg = '<p class="text-danger">Gagal memuat data mitra. Silakan coba lagi nanti.</p>';
+            tikContainer.innerHTML = errorMsg;
+            perikananContainer.innerHTML = errorMsg;
+            kelautanContainer.innerHTML = errorMsg;
+        }
+
+        // --- FUNGSI PENCARIAN YANG DIPERBARUI ---
+        function activateSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const partnerCards = document.querySelectorAll('.partner-card');
+            
+            searchInput.addEventListener('keyup', function(event) {
+                const searchTerm = event.target.value.toLowerCase();
+                
+                // Jika input pencarian kosong, sembunyikan semua section yang terbuka
+                if (searchTerm.length === 0) {
+                     document.querySelectorAll('.collapse.show').forEach(openCollapse => {
+                        new bootstrap.Collapse(openCollapse).hide();
+                    });
+                }
+
+                partnerCards.forEach(function(card) {
+                    const cardText = card.textContent.toLowerCase();
+                    const isMatch = cardText.includes(searchTerm);
+                    
+                    if (isMatch) {
+                        card.style.display = 'block';
+                        // Cari parent .collapse terdekat dan buka jika belum terbuka
+                        const parentCollapse = card.closest('.collapse');
+                        if (parentCollapse && !parentCollapse.classList.contains('show')) {
+                            new bootstrap.Collapse(parentCollapse).show();
+                        }
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+    </script>
+</body>
+</html>

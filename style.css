@@ -1,0 +1,42 @@
+/* Gaya Kustom untuk Website KPTK */
+
+/* Skema Warna */
+:root {
+    --primary-color: #0d6efd; /* Biru Primer Bootstrap */
+    --secondary-color: #6c757d; /* Abu-abu Sekunder */
+    --light-color: #f8f9fa; /* Latar Belakang Terang */
+    --dark-color: #212529;  /* Latar Belakang Gelap */
+}
+
+/* Navigasi */
+.navbar-brand {
+    font-size: 1.5rem;
+}
+
+/* Hero Section di Halaman Utama */
+.hero-section {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('Gambar/Ltblkng.jpg') no-repeat center center;
+    background-size: cover;
+}
+
+/* Warna Primary pada Judul Card */
+.card-title.text-primary {
+    color: var(--primary-color) !important;
+}
+
+/* Footer */
+footer {
+    background-color: var(--dark-color);
+}
+
+/* Membuat Body menjadi Flex Container */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Minimal setinggi layar */
+}
+
+/* Mendorong footer ke bawah */
+main {
+    flex-grow: 1; /* Biarkan main content mengambil semua ruang kosong yang tersedia */
+}

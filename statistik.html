@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistik Kemitraan - Kantor KPTK</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">PASSIKOLA</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link" href="mitra.html">Mitra Kami</a></li>
+                    <li class="nav-item"><a class="nav-link" href="prosedur.html">Dokumen Kerja Sama</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="statistik.html">Statistik</a></li>
+                    <li class="nav-item"><a class="nav-link" href="kontak.html">Kontak</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="bg-light py-5">
+        <div class="container text-center">
+            <h1 class="display-6 fw-bold">Statistik Kemitraan KPTK</h1>
+            <p class="lead text-muted">Visualisasi data pertumbuhan jumlah mitra kerja sama dari tahun ke tahun.</p>
+        </div>
+    </header>
+
+    <main class="container my-5">
+        <div class="card shadow-sm mb-5" data-aos="fade-up">
+            <div class="card-body p-4">
+                <canvas id="mitraChart"></canvas>
+            </div>
+        </div>
+
+        <div data-aos="fade-up" data-aos-delay="200">
+            <h2 class="text-center mb-4">Rincian Data Kemitraan per Tahun</h2>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover text-center">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Tahun</th>
+                            <th>Mitra TIK</th>
+                            <th>Mitra Perikanan</th>
+                            <th>Mitra Kelautan</th>
+                            <th>Total Mitra</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summaryTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-dark text-white text-center p-4 mt-5">
+        <p class="mb-0">© 2025 Kantor KPTK. Semua Hak Cipta Dilindungi.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <script>
+    // Inisialisasi AOS
+    AOS.init({ duration: 800, once: true });
+
+    // --- GANTI URL INI DENGAN URL GOOGLE SHEET ANDA ---
+    const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTSLDuZ9a5mNLIIjKO97xKDF3eKQbPrnDVmIPi4oNfSB5vkwBbogjF4W8W9UgyB4cM4IUwxOTDuF3i4/pub?output=csv';
+
+    // Fungsi untuk mengubah teks CSV menjadi objek data
+    function parseCSV(csvText) {
+        const lines = csvText.split(/\r?\n/);
+        const headers = lines[0].split(',');
+        const data = [];
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i]) continue;
+            const obj = {};
+            const currentline = lines[i].split(',');
+            for (let j = 0; j < headers.length; j++) {
+                obj[headers[j]] = currentline[j];
+            }
+            data.push(obj);
+        }
+        return data;
+    }
+
+    async function generateStatistics() {
+        try {
+            const response = await fetch(googleSheetURL);
+            const csvText = await response.text();
+            const allMitra = parseCSV(csvText);
+
+            // Proses data untuk statistik
+            const yearlyData = {};
+            allMitra.forEach(mitra => {
+                const year = mitra.tahun;
+                const bidang = mitra.bidang;
+                if (!year || !bidang) return;
+
+                if (!yearlyData[year]) {
+                    yearlyData[year] = { Perikanan: 0, Kelautan: 0, TIK: 0 };
+                }
+                if (yearlyData[year][bidang] !== undefined) {
+                    yearlyData[year][bidang]++;
+                }
+            });
+
+            // Siapkan data untuk grafik dan tabel
+            const labels = Object.keys(yearlyData).sort();
+            const dataTIK = labels.map(year => yearlyData[year].TIK);
+            const dataPerikanan = labels.map(year => yearlyData[year].Perikanan);
+            const dataKelautan = labels.map(year => yearlyData[year].Kelautan);
+            
+            // Gambar Grafik
+            drawChart(labels, dataTIK, dataPerikanan, dataKelautan);
+
+            // Isi Tabel
+            fillTable(labels, yearlyData);
+
+        } catch (error) {
+            console.error('Gagal membuat statistik:', error);
+        }
+    }
+
+    function drawChart(labels, dataTIK, dataPerikanan, dataKelautan) {
+        const ctx = document.getElementById('mitraChart');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                        {
+                            label: 'TIK',
+                            data: dataTIK,
+                            borderColor: 'rgb(255, 0, 0)',
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: 'rgb(255, 0, 0)', 
+                            pointBorderColor: 'rgb(255, 0, 0)'
+                        },
+                        {
+                            label: 'Perikanan',
+                            data: dataPerikanan,
+                            borderColor: 'rgb(25, 135, 84)',
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: 'rgb(25, 135, 84)',
+                            pointBorderColor: 'rgb(25, 135, 84)'
+                        },
+                        {
+                            label: 'Kelautan',
+                            data: dataKelautan,
+                            borderColor: 'rgb(13, 202, 240)',
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: 'rgb(13, 202, 240)',
+                            pointBorderColor: 'rgb(13, 202, 240)'
+                        }
+                ]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                scales: { y: { beginAtZero: true, title: { display: true, text: 'Jumlah Mitra Baru' } } },
+                plugins: {
+                    title: { display: true, text: 'Grafik Pertumbuhan Mitra Berdasarkan Bidang per Tahun', font: { size: 18 } },
+                    legend: { display: true, position: 'top', labels: { usePointStyle: true } }
+                }
+            }
+        });
+    }
+
+    function fillTable(labels, yearlyData) {
+        const tableBody = document.getElementById('summaryTableBody');
+        let tableHTML = '';
+        labels.forEach(year => {
+            const data = yearlyData[year];
+            const total = data.TIK + data.Perikanan + data.Kelautan;
+            tableHTML += `
+                <tr>
+                    <td><strong>${year}</strong></td>
+                    <td>${data.TIK}</td>
+                    <td>${data.Perikanan}</td>
+                    <td>${data.Kelautan}</td>
+                    <td><strong>${total}</strong></td>
+                </tr>
+            `;
+        });
+        tableBody.innerHTML = tableHTML;
+    }
+
+    // Jalankan fungsi utama
+    generateStatistics();
+</script>
+    
+</body>
+</html>
